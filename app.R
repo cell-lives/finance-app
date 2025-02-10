@@ -7,7 +7,8 @@ library(dplyr)
 library(lubridate)
 
 # 初始化数据存储
-if (!file.exists("/app/data/data.csv")) {
+DATA_STORE <- "/app/data/data.csv"
+if (!file.exists(DATA_STORE)) {
   data.frame(
     Date = as.Date(character()),
     Type = character(),
@@ -15,7 +16,7 @@ if (!file.exists("/app/data/data.csv")) {
     Amount = numeric(),
     Description = character(),
     stringsAsFactors = FALSE
-  ) %>% write.csv("/app/data/data.csv", row.names = FALSE)
+  ) %>% write.csv(DATA_STORE, row.names = FALSE)
 }
 
 # UI 界面
@@ -74,7 +75,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   # 响应式数据
   records <- reactiveVal({
-    read.csv("data.csv") %>%
+    read.csv(DATA_STORE) %>%
       mutate(Date = as.Date(Date)) %>%
       arrange(desc(Date))
   })
@@ -102,7 +103,7 @@ server <- function(input, output, session) {
     )
 
     updated_data <- rbind(new_entry, records())
-    write.csv(updated_data, "data.csv", row.names = FALSE)
+    write.csv(updated_data, DATA_STORE, row.names = FALSE)
     records(updated_data)
 
     showNotification("记录已保存！", type = "message")
@@ -126,7 +127,7 @@ server <- function(input, output, session) {
   observeEvent(input$delete, {
     if (!is.null(input$records_table_rows_selected)) {
       updated <- records()[-input$records_table_rows_selected, ]
-      write.csv(updated, "data.csv", row.names = FALSE)
+      write.csv(updated, DATA_STORE, row.names = FALSE)
       records(updated)
     }
   })
